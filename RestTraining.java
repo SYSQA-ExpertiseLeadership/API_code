@@ -8,6 +8,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
+import org.json.*;
+
 
 @Path("/RestTraining")
 public class RestTraining {
@@ -19,14 +21,19 @@ public class RestTraining {
 	String user = "postgres";
 	String passwd = "admin";
 	//String passwd = "HqwO(KqRc2T@Uoe[8s5H";
-
+	
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/create_customer/{gebruikersnaam}/{voornaam}/{achternaam}")
-	public String create_customer(@PathParam ("gebruikersnaam") String gebruikersnaam, @PathParam("voornaam") String voornaam, @PathParam("achternaam") String achternaam) throws Exception{
+	@Path("/create_customer")
+	//@Path("/create_customer/{gebruikersnaam}/{voornaam}/{achternaam}")
+	public String create_customer(String payload) throws Exception{
+		JSONObject obj = new JSONObject(payload);
+		String user_name =  obj.getString("gebruikersnaam");
+		String first_name =  obj.getString("voornaam");
+		String last_name =  obj.getString("achternaam");
 		int klantnummer = create_customernumber();
 		String Objid = create_objid();
-		String query = "insert into persoon values ('"+gebruikersnaam+"','"+voornaam+"','"+achternaam+"',"+Integer.toString(klantnummer)+","+Objid+")";
+		String query = "insert into persoon values ('"+user_name+"','"+first_name+"','"+last_name+"',"+Integer.toString(klantnummer)+","+Objid+")";
 		writeDataBase(query);
 		String resultaat = "{\"resultaat\":\"Er is een nieuwe klant aangemaakt met klantnummer "+Integer.toString(klantnummer)+"\""+"}"; 
 		return resultaat;
@@ -57,9 +64,15 @@ public class RestTraining {
 	
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/update_customer/{klant_nummer}/{veld}/{waarde}")
-	public String update_customer(@PathParam("klant_nummer") int klantnummer, @PathParam("veld") String veld, @PathParam("waarde") String waarde) throws Exception{
-		String query = "update persoon set "+veld+" = '"+waarde+"' where klantnummer = "+Integer.toString(klantnummer);
+	//@Path("/update_customer/{klant_nummer}/{veld}/{waarde}")
+	@Path("/update_customer")
+	public String update_customer(String payload_update) throws Exception{
+		JSONObject obj = new JSONObject(payload_update);
+		String veld =  obj.getString("veld");
+		String waarde =  obj.getString("waarde");
+		String klantnummer =  obj.getString("klantnummer");
+		System.out.println("Het klantnummer is "+klantnummer);
+		String query = "update persoon set "+veld+" = '"+waarde+"' where klantnummer = "+klantnummer;
 		writeDataBase(query);
 		
 		String resultaat = "{\"resultaat\":\"De "+veld+" van de klant is aangepast naar "+waarde+"\""+"}"; 
@@ -68,10 +81,13 @@ public class RestTraining {
 	
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/delete_customer/{klant_nummer}")
-	// Moet ik hier dan iets aanpassen om een globale delete ook mogelijk te maken?
-	public String delete_customer(@PathParam("klant_nummer") int klantnummer) throws Exception{
-		String query = "Delete from persoon where klantnummer = "+Integer.toString(klantnummer);
+	//@Path("/delete_customer/{klant_nummer}")
+	@Path("/delete_customer")
+	public String delete_customer(String payload_delete) throws Exception{
+		JSONObject obj = new JSONObject(payload_delete);
+		String klantnummer =  obj.getString("klantnummer");
+		System.out.println(klantnummer);
+		String query = "Delete from persoon where klantnummer = "+klantnummer;
 		writeDataBase(query);
 		String resultaat = "{\"resultaat\":\"De klant is verwijderd\"}"; 
 		return resultaat;
